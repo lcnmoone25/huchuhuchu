@@ -357,6 +357,7 @@
     aspect-ratio:1/1;
     object-fit:cover;
     border-radius:16px;
+    background:#000;
     transition:transform 0.8s ease;
   }
   .then-now-item.shrunk .now-media{
@@ -465,7 +466,7 @@
 <div id="finale">
   <div id="then-now" class="then-now-wrap">
     <div class="then-now-item" id="now-item">
-      <video id="now-video" class="now-media" src="loopy.mp4" playsinline></video>
+      <video id="now-video" class="now-media" src="loopy.mp4" playsinline webkit-playsinline muted autoplay preload="auto"></video>
       <div class="label">Today, we celebrate your birthday.</div>
     </div>
   </div>
@@ -923,6 +924,8 @@
     // Phase 2: once black, fade in and start playing loopy.mp4
     setTimeout(() => {
       nowEl.classList.add('shown');
+      video.muted = true; // required for iOS Safari to allow autoplay
+      video.playsInline = true;
       video.currentTime = 0;
       video.play().catch(()=>{ /* ignored if browser blocks autoplay */ });
     }, 600);
