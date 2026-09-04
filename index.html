@@ -572,6 +572,24 @@
     }
   ];
 
+  // ---------- Unlock the video for autoplay-with-sound while we still have a fresh user gesture ----------
+  // iOS/Safari only allow programmatic play() with sound if it's tied to a real tap. By the time we
+  // actually want to show the video (after several seconds of animations), that gesture has expired.
+  // So the moment the LAST quiz answer is tapped, we quickly play+pause the video (muted) in the
+  // background — this "unlocks" it, and later unmuted play() calls on this same element are then
+  // allowed even without another tap.
+  function unlockVideoForSound(){
+    const video = document.getElementById('now-video');
+    if(!video || video.dataset.unlocked) return;
+    video.dataset.unlocked = '1';
+    video.muted = true;
+    video.play().then(()=>{
+      video.pause();
+      video.currentTime = 0;
+      video.muted = false;
+    }).catch(()=>{ /* if this fails, the later play() attempt will just fall back silently */ });
+  }
+
   function goToSlide(id){
     document.querySelectorAll('.slide.active').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -589,6 +607,9 @@
         chosenBtn.classList.add('correct');
         feedback.textContent = q.correctMsg;
         feedback.className = 'feedback correct';
+        if(q.slideId === 'slide-q3'){
+          unlockVideoForSound(); // do this immediately, while the tap is still fresh
+        }
         setTimeout(q.next, 650);
       } else {
         chosenBtn.classList.remove('shake');
